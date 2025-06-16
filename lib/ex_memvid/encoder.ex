@@ -1,6 +1,67 @@
 defmodule ExMemvid.Encoder do
-  alias ExMemvid.{Config, Index, QR}
+  @moduledoc """
+  Encodes text chunks into QR code video files for memory storage and retrieval.
+
+  The `ExMemvid.Encoder` is the core component responsible for converting textual data
+  into video files where each frame contains a QR code representing a chunk of text.
+  This enables storing large amounts of text data in video format that can be later
+  decoded and searched.
+
+  ## Workflow
+
+  1. **Initialize** - Create a new encoder with configuration
+  2. **Add Chunks** - Add text chunks to be encoded
+  3. **Build Video** - Generate QR codes for each chunk and create video file
+  4. **Index Creation** - Build a search index for efficient text retrieval
+
+  ## Example
+
+      # Create encoder with configuration
+      config = %ExMemvid.Config{codec: "libx264", qr_size: 400}
+      {:ok, encoder} = ExMemvid.Encoder.new(config)
+
+      # Add text chunks
+      encoder = ExMemvid.Encoder.add_chunks(encoder, [
+        "First chunk of text data",
+        "Second chunk of text data",
+        "Third chunk of text data"
+      ])
+
+      # Build the video and index
+      {:ok, stats} = ExMemvid.Encoder.build_video(
+        encoder,
+        "output/video.mp4",
+        "output/index.bin"
+      )
+
+  ## Video Generation Process
+
+  For each text chunk, the encoder:
+  1. Creates a JSON payload with chunk ID, text content, and frame number
+  2. Generates a QR code from the JSON payload
+  3. Converts the QR code to a video frame with proper dimensions
+  4. Encodes the frame using the specified video codec
+  5. Builds a searchable index mapping text content to frame positions
+
+  ## Output
+
+  The encoder produces:
+  - **Video file**: Contains QR code frames that can be decoded to retrieve original text
+  - **Index file**: Binary search index for efficient text lookup and retrieval
+  - **Statistics**: Metadata about the encoding process (frame count, duration, etc.)
+
+  ## Configuration
+
+  The encoder behavior is controlled by `ExMemvid.Config` which specifies:
+  - Video codec and parameters (resolution, FPS, pixel format)
+  - QR code generation settings
+  - Output format preferences
+  """
   alias Evision
+  alias ExMemvid.Config
+  alias ExMemvid.Index
+  alias ExMemvid.QR
+  alias ExMemvid.TextChunking
   alias Xav.Encoder
 
   @type t :: %__MODULE__{
@@ -26,6 +87,15 @@ defmodule ExMemvid.Encoder do
   @spec add_chunks(t(), list(String.t())) :: t()
   def add_chunks(encoder, new_chunks) when is_list(new_chunks) do
     %__MODULE__{encoder | chunks: encoder.chunks ++ new_chunks}
+  end
+
+  @doc """
+  Adds text and automatically chunks it using the configured chunking settings.
+  """
+  @spec add_text(t(), String.t()) :: t()
+  def add_text(encoder, text) when is_binary(text) do
+    chunks = TextChunking.chunk(text, encoder.config)
+    add_chunks(encoder, chunks)
   end
 
   @doc """

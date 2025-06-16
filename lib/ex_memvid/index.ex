@@ -1,10 +1,95 @@
 defmodule ExMemvid.Index do
-  alias ExMemvid.Embedding
+  @moduledoc """
+  Manages a high-performance vector similarity search index for encoded video content.
+
+  The `ExMemvid.Index` module provides semantic search capabilities over text chunks
+  that have been encoded into QR code videos. It uses HNSW (Hierarchical Navigable
+  Small World) algorithms for efficient approximate nearest neighbor search, enabling
+  fast retrieval of relevant content from large video archives.
+
+  ## Key Features
+
+  - **Vector Similarity Search**: Uses embeddings to find semantically similar content
+  - **Frame Mapping**: Maintains relationships between text chunks and video frames  
+  - **Batch Processing**: Efficiently handles multiple text chunks simultaneously
+  - **Persistence**: Save and load index state to/from disk
+  - **Metadata Management**: Stores searchable metadata alongside vector embeddings
+  - **Configurable Performance**: Tunable parameters for speed vs accuracy trade-offs
+
+  ## Architecture
+
+  The index maintains three key data structures:
+  1. **HNSW Vector Index**: High-dimensional similarity search using HNSWLib
+  2. **Metadata Store**: Maps chunk IDs to text snippets and frame numbers
+  3. **Frame Mapping**: Associates video frames with their constituent text chunks
+
+  ## Workflow
+
+  1. **Initialize** - Create index with specified dimensions and parameters
+  2. **Add Content** - Insert text chunks with their embeddings and frame associations
+  3. **Search** - Query for similar content using natural language
+  4. **Retrieve** - Get specific chunks by ID or all chunks from a video frame
+  5. **Persist** - Save index state for future sessions
+
+  ## Example Usage
+
+      # Create a new index
+      config = [
+        index: %{
+          vector_search_space: :cosine,
+          embedding_dimensions: 384,
+          max_elements: 10_000,
+          ef_construction: 200,
+          ef_search: 50
+        },
+        embedding: %{
+          module: MyEmbeddingProvider,
+          model: "all-MiniLM-L6-v2"
+        }
+      ]
+      {:ok, index} = ExMemvid.Index.new(config)
+
+      # Add text chunks from encoded video
+      chunks = ["First chunk of text", "Second chunk of text"]
+      frame_numbers = [0, 1]
+      {:ok, index} = ExMemvid.Index.add_items(index, chunks, frame_numbers)
+
+      # Search for similar content
+      {:ok, results} = ExMemvid.Index.search(index, "find relevant text", 5)
+
+      # Get all chunks from a specific video frame
+      {:ok, frame_chunks} = ExMemvid.Index.get_chunks_by_frame(index, 0)
+
+      # Save index for later use
+      :ok = ExMemvid.Index.save(index, "my_index.json")
+
+  ## Search Results
+
+  Search operations return metadata maps containing:
+  - `:id` - Unique identifier for the chunk
+  - `:text_snippet` - First 100 characters of the original text
+  - `:frame_num` - Video frame number containing this chunk
+
+  ## Performance Tuning
+
+  Key configuration parameters affect performance:
+  - `ef_construction` - Higher values improve accuracy during index building (slower)
+  - `ef_search` - Higher values improve search accuracy (slower queries)
+  - `max_elements` - Maximum number of vectors the index can hold
+  - `vector_search_space` - Distance metric (`:cosine`, `:l2`, `:ip`)
+
+  ## Persistence Format
+
+  The index is saved as two files:
+  - `.json` file - Contains metadata and frame mappings
+  - `.hnsw` file - Binary HNSW index data
+  """
   alias ExMemvid.Config
+  alias ExMemvid.Embedding
   alias HNSWLib, as: Hnsw
 
   @type t :: %__MODULE__{
-          index: Hnsw.Index.t() | nil,
+          index: %Hnsw.Index{} | nil,
           metadata: %{integer => map()},
           frame_to_chunks: %{integer => list(integer())},
           config: ExMemvid.Config.t()
@@ -35,7 +120,7 @@ defmodule ExMemvid.Index do
   def add_items(search_state, chunks, frame_numbers) do
     {valid_chunks, valid_frame_numbers} =
       Enum.zip(chunks, frame_numbers)
-      |> Enum.filter(fn {chunk, _frame} -> is_valid_chunk(chunk) end)
+      |> Enum.filter(fn {chunk, _frame} -> valid_chunk?(chunk) end)
       |> Enum.unzip()
 
     opts = %{
@@ -216,7 +301,7 @@ defmodule ExMemvid.Index do
     end
   end
 
-  defp is_valid_chunk(chunk) do
+  defp valid_chunk?(chunk) do
     is_binary(chunk) and String.length(String.trim(chunk)) > 0
   end
 end

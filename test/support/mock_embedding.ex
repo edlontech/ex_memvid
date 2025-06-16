@@ -1,4 +1,6 @@
 defmodule ExMemvid.MockEmbedding do
+  @moduledoc false
+
   @behaviour ExMemvid.Embedding
 
   defp text_to_vec(text) do

@@ -6,7 +6,6 @@ defmodule ExMemvid.QrTest do
   test "encode and decode plain QR code" do
     config = [
       qr: %{
-        version: 25,
         error_correction: :medium,
         fill_color: "#000000",
         back_color: "#ffffff",
@@ -27,7 +26,6 @@ defmodule ExMemvid.QrTest do
   test "encode and decode gzipped QR code" do
     config = [
       qr: %{
-        version: 25,
         error_correction: :medium,
         fill_color: "#000000",
         back_color: "#ffffff",

@@ -1,11 +1,11 @@
 defmodule ExMemvid.RetrieverTest do
   use Nx.Case, async: false
 
-  alias ExMemvid.Retriever
-  alias ExMemvid.Index
   alias ExMemvid.Config
-  alias ExMemvid.QR
   alias ExMemvid.Embedding.Supervisor
+  alias ExMemvid.Index
+  alias ExMemvid.QR
+  alias ExMemvid.Retriever
 
   setup do
     config = Config.validate!([])

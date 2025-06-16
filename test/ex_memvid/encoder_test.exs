@@ -1,7 +1,9 @@
 defmodule ExMemvid.EncoderTest do
   use Nx.Case, async: false
 
-  alias ExMemvid.{Encoder, Config, Index}
+  alias ExMemvid.Config
+  alias ExMemvid.Encoder
+  alias ExMemvid.Index
 
   @test_chunks [
     "This is the first chunk of text for testing.",
@@ -59,12 +61,11 @@ defmodule ExMemvid.EncoderTest do
     end
 
     test "handles config conversion from list to map" do
-      config_list = [codec: :h265, qr: %{version: 20}]
+      config_list = [codec: :h265]
       {:ok, encoder} = Encoder.new(config_list)
 
       assert is_map(encoder.config)
       assert encoder.config[:codec] == :h265
-      assert encoder.config[:qr][:version] == 20
     end
   end
 

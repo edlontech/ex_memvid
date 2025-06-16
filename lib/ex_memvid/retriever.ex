@@ -8,8 +8,8 @@ defmodule ExMemvid.Retriever do
   """
   use GenServer
 
-  alias ExMemvid.Index
   alias ExMemvid.Config
+  alias ExMemvid.Index
   alias ExMemvid.QR
   alias Xav.Reader
 
@@ -28,7 +28,7 @@ defmodule ExMemvid.Retriever do
   @spec start_link(video_path: Path.t(), index_path: Path.t(), config: Config.t()) ::
           GenServer.on_start()
   def start_link(video_path: video_path, index_path: index_path, config: config) do
-    GenServer.start_link(__MODULE__, {video_path, index_path, config}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, {video_path, index_path, config})
   end
 
   @doc """

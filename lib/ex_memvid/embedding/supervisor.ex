@@ -74,24 +74,4 @@ defmodule ExMemvid.Embedding.Supervisor do
       [] -> {:error, :no_worker_available}
     end
   end
-
-  @doc """
-  Returns information about all workers.
-  """
-  def worker_info do
-    partitions = PartitionSupervisor.count_children(ExMemvid.Embedding.PartitionSupervisor)
-
-    workers =
-      Registry.select(@registry, [
-        {{:worker, :"$1"}, :"$2", :"$3"},
-        [],
-        [%{partition: :"$1", pid: :"$2", value: :"$3"}]
-      ])
-
-    %{
-      total_partitions: partitions.active,
-      active_workers: length(workers),
-      workers: workers
-    }
-  end
 end

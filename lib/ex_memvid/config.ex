@@ -10,18 +10,12 @@ defmodule ExMemvid.Config do
             qr: [
               type: :map,
               default: %{
-                version: 35,
                 error_correction: :medium,
                 fill_color: "#000000",
                 back_color: "#ffffff",
                 gzip: false
               },
               keys: [
-                version: [
-                  type: :integer,
-                  default: 35,
-                  doc: "QR version 1-40, higher = more data capacity"
-                ],
                 error_correction: [
                   type: :atom,
                   default: {:in, [:low, :medium, :quartile, :high]},
@@ -113,7 +107,7 @@ defmodule ExMemvid.Config do
               default: %{
                 vector_search_space: :cosine,
                 embedding_dimensions: 384,
-                max_elements: 10000
+                max_elements: 10_000
               },
               keys: [
                 ef_construction: [
@@ -138,23 +132,11 @@ defmodule ExMemvid.Config do
                 ],
                 max_elements: [
                   type: :integer,
-                  default: 10000,
+                  default: 10_000,
                   doc: "Maximum number of elements in the index"
                 ]
               ],
               doc: "Vector index settings"
-            ],
-            performance: [
-              type: :map,
-              keys: [
-                prefetch_frames: [
-                  type: :integer,
-                  default: 50,
-                  doc: "Number of frames to prefetch"
-                ],
-                decode_timeout: [type: :integer, default: 10, doc: "Decode timeout in seconds"]
-              ],
-              doc: "Performance optimization settings"
             ]
           )
 
@@ -169,40 +151,22 @@ defmodule ExMemvid.Config do
   def codec_parameters do
     %{
       h265: %{
-        video_file_type: "mkv",
         video_fps: 30,
-        video_crf: 28,
         frame_height: 256,
         frame_width: 256,
-        video_preset: "slower",
-        video_profile: "mainstillpicture",
-        pix_fmt: "yuv420p",
-        extra_ffmpeg_args:
-          "-x265-params keyint=1:tune=stillimage:no-scenecut:strong-intra-smoothing:constrained-intra:rect:amp"
+        pix_fmt: "yuv420p"
       },
       hevc: %{
-        video_file_type: "mkv",
         video_fps: 30,
-        video_crf: 28,
         frame_height: 256,
         frame_width: 256,
-        video_preset: "slower",
-        video_profile: "mainstillpicture",
-        pix_fmt: "yuv420p",
-        extra_ffmpeg_args:
-          "-x265-params keyint=1:tune=stillimage:no-scenecut:strong-intra-smoothing:constrained-intra:rect:amp"
+        pix_fmt: "yuv420p"
       },
       h264: %{
-        video_file_type: "mkv",
         video_fps: 30,
-        video_crf: 28,
         frame_height: 256,
         frame_width: 256,
-        video_preset: "slower",
-        video_profile: "main",
-        pix_fmt: "yuv420p",
-        extra_ffmpeg_args:
-          "-x265-params keyint=1:tune=stillimage:no-scenecut:strong-intra-smoothing:constrained-intra:rect:amp"
+        pix_fmt: "yuv420p"
       }
     }
   end
@@ -213,10 +177,10 @@ defmodule ExMemvid.Config do
   ## Examples
 
       iex> ExMemvid.Config.get_codec_parameters(:h265)
-      %{video_file_type: "mkv", ...}
+      %{video_fps: 30, ...}
       
       iex> ExMemvid.Config.get_codec_parameters(:invalid)
-      {:error, "Unsupported codec: invalid. Available: [:mp4v, :h265, :hevc, :h264, :avc, :av1]"}
+      {:error, "Unsupported codec: invalid. Available: [:h265, :hevc, :h264]"}
   """
   def get_codec_parameters(codec_name \\ nil) do
     params = codec_parameters()
@@ -227,19 +191,6 @@ defmodule ExMemvid.Config do
       codec -> {:error, "Unsupported codec: #{codec}. Available: #{inspect(Map.keys(params))}"}
     end
   end
-
-  @doc """
-  Validates configuration options using NimbleOptions.
-
-  ## Examples
-
-      iex> ExMemvid.Config.validate(qr: [version: 35])
-      {:ok, [qr: [version: 35, error_correction: :M, ...], ...]}
-      
-      iex> ExMemvid.Config.validate(qr: [version: "invalid"])
-      {:error, %NimbleOptions.ValidationError{...}}
-  """
-  def validate(config), do: NimbleOptions.validate(config, @schema)
 
   @doc """
   Validates configuration options, raising on error.

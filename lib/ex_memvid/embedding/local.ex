@@ -9,8 +9,8 @@ defmodule ExMemvid.Embedding.Local do
 
   require Logger
 
-  alias ExMemvid.Embedding.Supervisor, as: EmbeddingSupervisor
   alias ExMemvid.Embedding.Local.Worker, as: LocalWorker
+  alias ExMemvid.Embedding.Supervisor, as: EmbeddingSupervisor
 
   @behaviour ExMemvid.Embedding
 
@@ -53,13 +53,6 @@ defmodule ExMemvid.Embedding.Local do
           {:error, :no_worker_available}
       end
     end
-  end
-
-  @doc """
-  Returns information about the embedding workers.
-  """
-  def worker_info do
-    EmbeddingSupervisor.worker_info()
   end
 
   @doc """
