@@ -19,6 +19,7 @@ defmodule Nx.Case do
   def test_compiler do
     cond do
       System.get_env("USE_EXLA") -> EXLA
+      System.get_env("USE_EMLX") -> EMLX
       true -> Nx.Defn.Evaluator
     end
   end

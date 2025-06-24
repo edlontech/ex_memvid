@@ -401,4 +401,3 @@ defmodule ExMemvid.EncoderSupervisorTest do
     end
   end
 end
-

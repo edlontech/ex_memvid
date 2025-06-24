@@ -74,10 +74,7 @@ defmodule ExMemvid.Retriever do
               result.text_snippet
 
             decoded_json ->
-              case Jason.decode(decoded_json) do
-                {:ok, %{"text" => text}} -> text
-                _ -> result.text_snippet
-              end
+              decode_seach_result(decoded_json, result)
           end
         end)
 
@@ -91,6 +88,13 @@ defmodule ExMemvid.Retriever do
   # ================================================================
   # Private Helper Functions
   # ================================================================
+  #
+  defp decode_seach_result(decoded_json, result) do
+    case Jason.decode(decoded_json) do
+      {:ok, %{"text" => text}} -> text
+      _ -> result.text_snippet
+    end
+  end
 
   defp decode_frames(state, frame_numbers) do
     cached_frames =
@@ -113,10 +117,7 @@ defmodule ExMemvid.Retriever do
         |> Stream.filter(fn {_frame, index} -> index in uncached_frame_numbers end)
         |> Task.async_stream(
           fn {frame, index} ->
-            case QR.decode(frame.data, state.config) do
-              {:ok, text} -> {index, text}
-              {:error, _reason} -> nil
-            end
+            decode_qr(frame, index, state)
           end,
           max_concurrency: System.schedulers_online() * 2,
           ordered: false
@@ -130,6 +131,13 @@ defmodule ExMemvid.Retriever do
       all_decoded_frames = Map.merge(cached_frames, newly_decoded_map)
 
       {:ok, all_decoded_frames, new_cache}
+    end
+  end
+
+  defp decode_qr(frame, index, state) do
+    case QR.decode(frame.data, state.config) do
+      {:ok, text} -> {index, text}
+      {:error, _reason} -> nil
     end
   end
 end

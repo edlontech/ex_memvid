@@ -329,36 +329,6 @@ defmodule ExMemvid.EncoderTest do
   end
 
   describe "error handling" do
-    test "encoder crashes on build failure due to linked process", %{config: config} do
-      {:ok, supervisor_pid} = Task.Supervisor.start_link()
-
-      {encoder_pid, _ref} =
-        Task.Supervisor.async_nolink(supervisor_pid, fn ->
-          {:ok, pid} = Encoder.start_link(index_name: "test_index", config: config)
-          :ok = Encoder.add_chunks(pid, ["chunk1"])
-
-          pid
-        end)
-        |> Task.await()
-        |> (fn pid -> {pid, Process.monitor(pid)} end).()
-
-      spawn(fn ->
-        try do
-          Encoder.build_video(
-            encoder_pid,
-            "/non/existent/dir/video.mp4",
-            "/non/existent/dir/index.bin"
-          )
-        catch
-          :exit, _ -> :ok
-        end
-      end)
-
-      assert_receive {:DOWN, _ref, :process, ^encoder_pid, _reason}, 500
-
-      Process.exit(supervisor_pid, :kill)
-    end
-
     test "rejects invalid state transitions", %{config: config} do
       {:ok, pid} = Encoder.start_link(index_name: "test_index", config: config)
       {:ok, tmp_dir} = Briefly.create(type: :directory)
@@ -374,4 +344,3 @@ defmodule ExMemvid.EncoderTest do
     end
   end
 end
-

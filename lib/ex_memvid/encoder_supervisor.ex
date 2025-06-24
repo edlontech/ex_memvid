@@ -115,14 +115,15 @@ defmodule ExMemvid.EncoderSupervisor do
   @spec stop_encoder(GenServer.server()) :: :ok | {:error, :not_found}
   def stop_encoder(pid_or_name) do
     # Resolve name to PID if necessary
-    pid = if is_pid(pid_or_name) do
-      pid_or_name
-    else
-      case GenServer.whereis(pid_or_name) do
-        nil -> nil
-        pid -> pid
+    pid =
+      if is_pid(pid_or_name) do
+        pid_or_name
+      else
+        case GenServer.whereis(pid_or_name) do
+          nil -> nil
+          pid -> pid
+        end
       end
-    end
 
     if pid do
       case DynamicSupervisor.terminate_child(@supervisor_name, pid) do
@@ -145,7 +146,7 @@ defmodule ExMemvid.EncoderSupervisor do
 
   Returns a list of `{id, pid, type, modules}` tuples for each running encoder.
   """
-  @spec list_encoders() :: [DynamicSupervisor.child()]
+  @spec list_encoders() :: [tuple()]
   def list_encoders do
     DynamicSupervisor.which_children(@supervisor_name)
   end

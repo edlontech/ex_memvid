@@ -64,7 +64,7 @@ defmodule ExMemvid.Encoder do
           index_path: String.t() | nil,
           stats: map() | nil,
           error: term() | nil,
-          client_from: GenStateMachine.from() | nil
+          client_from: pid() | nil
         }
 
   @doc """
