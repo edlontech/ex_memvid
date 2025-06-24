@@ -27,7 +27,7 @@ jobs:
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: ffmpeg libavutil-dev libavcodec-dev libswscale-dev libavformat-dev libavfilter-dev libavdevice-dev
+          packages: ffmpeg libavutil-dev libavcodec-dev libswscale-dev libavformat-dev libavfilter-dev libavdevice-dev libblas-dev
           version: 1.0
 
       - name: Set up Elixir
