@@ -9,6 +9,9 @@ permissions:
 
 name: Release Flow
 
+env:
+  MIX_ENV: prod
+
 jobs:
   release-please:
     strategy:

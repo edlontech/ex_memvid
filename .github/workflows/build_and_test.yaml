@@ -9,6 +9,7 @@ permissions:
 
 env:
   USE_EXLA: true
+  MIX_ENV: test
 
 jobs:
   build:
