@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/edlontech/ex_memvid/compare/v0.1.0...v0.1.1) (2025-06-24)
+
+
+### Bug Fixes
+
+* Fixing EXLA mess ([edef7e8](https://github.com/edlontech/ex_memvid/commit/edef7e802a9f2588dd33285e99e871da888b7b11))
+
 ## 0.1.0 (2025-06-24)
 
 
