@@ -10,10 +10,18 @@ defmodule ExMemvid.MixProject do
       description: description(),
       package: package(),
       dialyzer: [
-        plt_file: {:no_warn, "priv/plts/project.plt"}
+        plt_core_path: "_plts/core"
       ],
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      docs: [
+        main: "readme",
+        extras: [
+          "README.md": [title: "Introduction"],
+          "CHANGELOG.md": [title: "Changelog"],
+          LICENSE: [title: "License"]
+        ]
+      ]
     ]
   end
 

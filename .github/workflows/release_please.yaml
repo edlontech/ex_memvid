@@ -21,7 +21,13 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           release-type: elixir
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ffmpeg libavutil-dev libavcodec-dev libswscale-dev libavformat-dev libavfilter-dev libavdevice-dev
+          version: 1.0
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1

@@ -12,6 +12,7 @@ env:
 
 jobs:
   build:
+    if: github.head_ref != 'release-please--branches--main'
     strategy:
       matrix:
         elixir: ["1.18.1"]
@@ -24,8 +25,10 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v4
 
-      - name: Setup FFmpeg
-        uses: federicocarboni/setup-ffmpeg@v3.1
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ffmpeg libavutil-dev libavcodec-dev libswscale-dev libavformat-dev libavfilter-dev libavdevice-dev
+          version: 1.0
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
