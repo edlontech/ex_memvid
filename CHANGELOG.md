@@ -1,0 +1,13 @@
+# Changelog
+
+## 0.1.0 (2025-06-24)
+
+
+### Bug Fixes
+
+* Fixed some tests and added workflow ([6201e25](https://github.com/edlontech/ex_memvid/commit/6201e25e600e985d7ed8d5e906ae4a6520a04a85))
+
+
+### Continuous Integration
+
+* Improved workflows ([0771a8f](https://github.com/edlontech/ex_memvid/commit/0771a8f0f482f040526faaaf9806de03ec9a19e2))
