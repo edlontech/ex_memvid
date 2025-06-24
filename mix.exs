@@ -61,7 +61,7 @@ defmodule ExMemvid.MixProject do
   ## Exla 0.9 is not building on MacOS, 0.10 is, but bumblebee requires 0.9
   defp maybe_add_exla(deps) do
     if System.get_env("USE_EXLA") do
-      deps ++ [{:exla, ">= 0.0.0", only: [:dev, :test]}]
+      deps ++ [{:exla, ">= 0.0.0", only: [:dev, :test], optional: true}]
     else
       deps
     end
