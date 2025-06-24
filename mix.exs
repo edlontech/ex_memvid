@@ -33,6 +33,7 @@ defmodule ExMemvid.MixProject do
       {:evision, "~> 0.2"},
       {:ex_check, "~> 0.16", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
+      {:exla, "~> 0.10", only: [:dev, :test]},
       {:gen_state_machine, "~> 3.0"},
       {:hnswlib, "~> 0.1"},
       {:mimic, "~> 1.12", only: :test},
