@@ -24,11 +24,17 @@ defmodule ExMemvid.Retriever do
 
   @doc """
   Starts the Retriever GenServer.
+
+  ## Parameters
+    - `video_path` - Path to the video file
+    - `index_path` - Path to the index file  
+    - `config` - Configuration map
+    - `opts` - GenServer options (e.g., name: MyRetriever)
   """
-  @spec start_link(video_path: Path.t(), index_path: Path.t(), config: Config.t()) ::
+  @spec start_link(Path.t(), Path.t(), Config.t(), GenServer.options()) ::
           GenServer.on_start()
-  def start_link(video_path: video_path, index_path: index_path, config: config) do
-    GenServer.start_link(__MODULE__, {video_path, index_path, config})
+  def start_link(video_path, index_path, config, opts \\ []) do
+    GenServer.start_link(__MODULE__, {video_path, index_path, config}, opts)
   end
 
   @doc """
@@ -83,6 +89,18 @@ defmodule ExMemvid.Retriever do
     else
       error -> {:reply, error, state}
     end
+  end
+
+  @impl true
+  def handle_call(:get_state, _from, state) do
+    info = %{
+      video_path: state.video_path,
+      index_loaded: state.index != nil,
+      cache_size: map_size(state.cache),
+      config: state.config
+    }
+
+    {:reply, info, state}
   end
 
   # ================================================================

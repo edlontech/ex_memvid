@@ -71,7 +71,7 @@ defmodule ExMemvid.RetrieverTest do
     chunks: chunks
   } do
     {:ok, pid} =
-      Retriever.start_link(video_path: video_path, index_path: index_path, config: config)
+      Retriever.start_link(video_path, index_path, config)
 
     query = "elixir"
     {:ok, [result | _]} = Retriever.search(pid, query)

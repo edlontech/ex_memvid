@@ -1,6 +1,6 @@
 # ExMemvid
 
-An Elixir Port of [Memvid](https://github.com/Olow304/memvid).
+[![Hex](https://img.shields.io/hexpm/v/ex_memvid?style=flat-square)](https://hex.pm/packages/ex_memvid)
 
 ExMemvid is a proof-of-concept library for storing and retrieving large amounts of text data by encoding it into a video file composed of QR code frames. It leverages modern Elixir libraries for machine learning, video processing, and vector search to provide a unique solution for data storage and semantic retrieval.
 
@@ -33,6 +33,7 @@ The core idea is to treat video frames as a data storage medium. Each frame in t
 *   **Configurable**: Easily configure everything from the video codec and QR code version to the embedding model.
 *   **Concurrent**: Utilizes Elixir's concurrency to parallelize embedding and frame decoding tasks.
 *   **Extensible**: The `Embedding` behaviour allows for swapping out the embedding implementation.
+*   **Supervised**: Built-in supervisors for managing encoder and retriever processes.
 
 ## Installation
 
@@ -41,62 +42,101 @@ Add `ex_memvid` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_memvid, github: "edlontech/ex_memvid", branch: "main"}
+    {:ex_memvid, "~> 0.1.1"}
   ]
 end
 ```
 
 You will also need `ffmpeg` installed on your system for some of the underlying video operations.
 
-## Usage Example
+## Quick Start
 
-Here’s a complete example of how to encode a list of text chunks and then retrieve them via search.
+### Basic Usage
 
 ```elixir
-# 1. Configuration
-config = ExMemvid.Config.validate!(
-  embedding: %{
-    # Using a mock embedding module for this example
-    module: ExMemvid.MockEmbedding,
-    dimension: 3
-  }
-)
+# 1. Configure with Hugging Face embeddings
+config = ExMemvid.Config.validate!([])
 
-# Some text data to store
-chunks = [
-  "elixir is a functional, concurrent language",
-  "phoenix is a popular web framework for elixir",
-  "the actor model enables robust, concurrent systems",
-  "bumblebee brings hugging face transformers to elixir"
+# 2. Start the embedding supervisor
+{:ok, _} = ExMemvid.Embedding.Supervisor.start_link(config)
+
+# 3. Create and populate an encoder
+{:ok, encoder} = ExMemvid.Encoder.new(config)
+
+# Add your text data
+texts = [
+  "The Elixir programming language is designed for building maintainable and scalable applications.",
+  "Phoenix LiveView enables rich, real-time user experiences with server-rendered HTML.",
+  "OTP provides battle-tested abstractions for building fault-tolerant systems.",
+  "Ecto is a database wrapper and query generator for Elixir.",
+  "GenServers are the building blocks of stateful processes in Elixir applications."
 ]
 
-# 2. Setup Encoder
-{:ok, encoder} = ExMemvid.Encoder.new(config)
-encoder = ExMemvid.Encoder.add_chunks(encoder, chunks)
+encoder = ExMemvid.Encoder.add_chunks(encoder, texts)
 
-# 3. Define output paths
-output_dir = "output"
-video_path = Path.join(output_dir, "my_video.mkv")
-index_path = Path.join(output_dir, "my_index.json")
+# 4. Build the video and index
+video_path = "knowledge_base.mp4"
+index_path = "knowledge_base.hnsw"
 
-# 4. Build the video and search index
 {:ok, stats} = ExMemvid.Encoder.build_video(encoder, video_path, index_path)
-IO.inspect(stats)
+IO.puts("Encoded #{stats.frame_count} frames into video")
 
-# 5. Start the Retriever GenServer
-{:ok, retriever_pid} = ExMemvid.Retriever.start_link(
-  video_path: video_path,
-  index_path: index_path,
-  config: config
-)
+# 5. Search the content
+{:ok, retriever} = ExMemvid.Retriever.start_link(video_path, index_path, config)
 
-# 6. Perform a search
-query = "What is elixir?"
-{:ok, results} = ExMemvid.Retriever.search(retriever_pid, query, 2)
-
-IO.puts("Search results for '#{query}':")
-IO.inspect(results)
-#=> ["elixir is a functional, concurrent language", "bumblebee brings hugging face transformers to elixir"]
+{:ok, results} = ExMemvid.Retriever.search(retriever, "What is LiveView?", top_k: 2)
+Enum.each(results, &IO.puts/1)
 ```
 
+### Using Supervisors
 
+```elixir
+# Start the retriever supervisor
+{:ok, _} = ExMemvid.RetrieverSupervisor.start_link([])
+
+# Start multiple retrievers for different video archives
+{:ok, docs_retriever} = ExMemvid.RetrieverSupervisor.start_retriever(
+  "documentation.mp4",
+  "documentation.hnsw",
+  config,
+  name: :docs_retriever
+)
+
+{:ok, blog_retriever} = ExMemvid.RetrieverSupervisor.start_retriever(
+  "blog_posts.mp4",
+  "blog_posts.hnsw", 
+  config,
+  name: :blog_retriever
+)
+
+# Query different knowledge bases
+{:ok, docs} = ExMemvid.Retriever.search(:docs_retriever, "How to use GenServers?")
+{:ok, blogs} = ExMemvid.Retriever.search(:blog_retriever, "Real-world Elixir stories")
+
+# Check active retrievers
+ExMemvid.RetrieverSupervisor.count_retrievers()
+#=> 2
+
+# Get info about a specific retriever
+{:ok, info} = ExMemvid.RetrieverSupervisor.get_retriever_info(:docs_retriever)
+#=> %{video_path: "documentation.mp4", cache_size: 5, ...}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Original Python implementation: [Memvid](https://github.com/Olow304/memvid)
+- Powered by [Bumblebee](https://github.com/elixir-nx/bumblebee) for ML models
+- Video processing with [Xav](https://github.com/kim-company/xav)
+- QR code handling via [Evision](https://github.com/cocoa-xu/evision)

@@ -47,7 +47,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-
 
       - name: Fetch and Compile Dependencies
-        if: steps.mix-deps.outputs.cache-hit != 'true'
+        # if: steps.mix-deps.outputs.cache-hit != 'true'
         run: |
           mix deps.get
           mix deps.compile
