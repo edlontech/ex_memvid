@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/edlontech/ex_memvid/compare/v0.1.1...v0.1.2) (2025-06-25)
+
+
+### Bug Fixes
+
+* Improved examples and added retriever supervisor ([77a03ed](https://github.com/edlontech/ex_memvid/commit/77a03edfac0c5a8038570f29107c3458e20923ea))
+
 ## [0.1.1](https://github.com/edlontech/ex_memvid/compare/v0.1.0...v0.1.1) (2025-06-24)
 
 
